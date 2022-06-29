@@ -40,7 +40,7 @@ public class Compressor1 {
                     node = prevnode.next;
                 }
 
-                if(true)
+                if(head2.next != null)
                 {
                     pixel prevTestNode = head2.next;
                     pixel testNode = head2.next.next;
@@ -87,6 +87,8 @@ public class Compressor1 {
                         break;
                     }
                 }
+                else
+                    break;
             }
 
             /*pixel node = head;

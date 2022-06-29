@@ -6,9 +6,30 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 	// write your code here
-        Data.setSource("F:\\programing\\java\\testing\\download.jpg"); // the image that you want to compress
-        Data.setRgbBits(3); // the level of neglect of similar colors 8 is maximum (the worst quality) 1 is minimal (lossless compression)
 
+        Data.setSource("F:\\programing\\java\\testing\\test.png");
+        final int[][][] image = ImageMeneger.getImageAsArray(Data.getSourceImagePath(),false);
+        System.out.println("image size " + image.length + " X " + image[0].length);
+        System.out.print("before compress size: "); ImageMeneger.printSizeReport(image);
+        final long startTime1 = System.currentTimeMillis();
+        final boolean[] code = Compressor2.compress(image);
+        final long endTime1 = System.currentTimeMillis();
+        final int[][][] imageUn = Compressor2.uncompress(code);
+        final long uncompressTime1 = System.currentTimeMillis() - endTime1;
+        ImageMeneger.saveArrayAsImage(imageUn,false);
+        System.out.print("after compress2 size: "); ImageMeneger.printSizeReport(code);
+        final long startTime2 = System.currentTimeMillis();
+        final boolean[] code2 = Compressor1.getCompressCode(image);
+        final long endTime2 = System.currentTimeMillis();
+        Compressor1.unCompress(code2);
+        final long uncompressTime2 = System.currentTimeMillis() - endTime2;
+        System.out.print("after compress1 size: ");ImageMeneger.printSizeReport(code2);
+        ImageMeneger.save10(code,Data.getBitsSaveName());
+        System.out.print("\nbool compress: "); ImageMeneger.printSizeReport(BoolCompresor.compressBool(code));
+        System.out.println("\nc2 compression time: " + (endTime1 - startTime1) + " milliseconds\nc2 decompression time: " + uncompressTime1 + " milliseconds\n\nc1 compression time: " + (endTime2 - startTime2) + " milliseconds\nc1 decompression time: " + uncompressTime2 + " milliseconds\n");
+        System.out.println("done");/**/
+        /*Data.setSource("F:\\programing\\java\\testing\\download.jpg"); // the image that you want to compress
+        Data.setRgbBits(4); // the level of neglect of similar colors 8 is maximum (the worst quality) 1 is minimal (lossless compression)
         int[][][] image = ImageMeneger.getImageAsArray(Data.getSourceImagePath(),false);
         final long startTime1 = System.currentTimeMillis();
         boolean[] codder = Compressor1.getCompressCode(image);
@@ -28,7 +49,7 @@ public class Main {
         final long boolCompressionStart = System.currentTimeMillis();
         boolean[] c2 = BoolCompresor.compressBool(codder);
         System.out.print("(testing) (" + (System.currentTimeMillis() - boolCompressionStart) + " ms) bool compression value: ");
-        ImageMeneger.printSizeReport(c2);
+        ImageMeneger.printSizeReport(c2);*/
         //printCode(codder);
        // final boolean[] compress = BoolCompresor.compressBool(codder);
         //printCode(compress);
@@ -54,4 +75,5 @@ public class Main {
         }
         System.out.println();
     }
+
 }

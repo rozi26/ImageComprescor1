@@ -59,4 +59,15 @@ public class Data {
     {
         return f.length() * 8;
     }
+
+    public static String colorToRGBCode(int[] color)
+    {
+        StringBuilder text = new StringBuilder();
+        for(int i = 0; i < color.length; i++)
+        {
+            text.append((color[i] % 16 < 10)?(char)(color[i] % 16 + 48):(char)(color[i] % 16 + 55));
+            text.append((color[i] / 16 < 10)?(char)(color[i] / 16 + 48):(char)(color[i] / 16 + 55));
+        }
+        return text.toString();
+    }
 }
