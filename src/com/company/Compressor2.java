@@ -1,149 +1,34 @@
 package com.company;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import com.company.Orginizer.Pixel;
 
-public class Compressor2 {
-    private static class Pixel
+public class Compressor2 { //better version of compressor1. great with simple drawable images
+   /* public class Pixel extends Orginizer.Pixel
     {
-        boolean[] colorIdentify;
-        final int[] color;
-        int count = 1;
-        int loopCount = 0;
-        List<Integer> loopsIndex = null;
-        List<Integer> loopsLength = null;
+        private boolean[] colorIdentify;
         public Pixel(int[] _color)
         {
-            color = _color;
+            super(_color);
         }
-        public boolean equal(int[] _color)
+        public Pixel(Pixel p)
         {
-            return equalInt3(color,_color);
+            super(p.color);
         }
-        public void addLoop(int from, int to)
-        {
-            if(loopsIndex == null)
-            {
-                loopsLength = new ArrayList<Integer>();
-                loopsIndex = new ArrayList<Integer>();
-            }
-            loopsIndex.add(from);
-            loopsLength.add(to - from);
-            loopCount++;
-        }
-       /* public String toString()
-        {
-            StringBuilder text = new StringBuilder();
-            text.append("color: " + Data.colorToRGBCode(color));
-            text.append("\ncount: " + count);
-            text.append("\nloops count: " + ((loopsIndex == null)?0:loopsIndex.size()));
-            if(loopsIndex != null)
-            {
-                for(int i = 0; i < loopsIndex.size(); i++)
-                {
-                    text.append("\n\tloop from " + loopsIndex.get(i));
-                    text.append(" -> " + (loopsIndex.get(i) + loopsLength.get(i)));
-                    text.append(" (" + (loopsLength.get(i)) + ")");
-                }
-            }
-            text.append("\n\n");
-            return text.toString();
-        }*/
-        public int haveLoopIn(int index)
-        {
-            if(loopsIndex == null) return 0;
-            for(int i = 0; i < loopsIndex.size(); i++)
-            {
-                if(loopsIndex.get(i) == index) return loopsLength.get(i);
-            }
-            return 0;
-        }
-        public void setColorIdentify(boolean[] id)
+        private void setColorIdentify(boolean[] id)
         {
             colorIdentify = id.clone();
         }
-    }
+    }*/
     public static boolean[] compress(int[][][] image)
     {
-
-        class ListMeneger
-        {
-            List<Pixel> list = new ArrayList<Pixel>();
-            private int biggestLoop = 0;
-
-            private int[] prevColor;
-            private int prevStart;
-            private int prevListIndex;
-            ListMeneger(int[] firstColor)
-            {
-                prevColor = firstColor;
-                prevStart = 0;
-                prevListIndex = 0;
-                list.add(new Pixel(firstColor));
-            }
-            private void addColor(int[] color, int index)
-            {
-                if(!equalInt3(prevColor,color))
-                {
-                    endLoop(index);
-                    prevColor = color;
-                    prevStart = index;
-                    for(int i = 0; i < list.size(); i++)
-                    {
-                        if(list.get(i).equal(color)){list.get(i).count++;prevListIndex = i; return;}
-                    }
-                    prevListIndex = list.size();
-                    list.add(new Pixel(color));
-                }
-            }
-            private void endLoop(int index)
-            {
-                if(index - prevStart > 1)
-                {
-                    list.get(prevListIndex).addLoop(prevStart,index - 1);
-                    biggestLoop = Math.max(biggestLoop,index - 1 - prevStart);
-                }
-            }
-            private void  printReport()
-            {
-                for(Pixel pixel: list)
-                {
-                    System.out.println(pixel.toString());
-                }
-            }
-            private void sortList()
-            {
-                list.sort(new Comparator<Pixel>() {
-                    @Override
-                    public int compare(Pixel o1, Pixel o2) {
-                        return (o1.count > o2.count) ? -1 : 0;
-                    }
-                });
-            }
-            public Pixel getEqualTo(int[] color)
-            {
-                for(Pixel pixel: list)
-                {
-                    if(pixel.equal(color))
-                        return pixel;
-                }
-                System.out.println("error didn't found match");
-                return null;
-            }
-        }
-        ListMeneger meneger = new ListMeneger(image[0][0]);
-        int index = 1;
-        for(int i = 0; i < image.length; i++)
-        {
-            for(int g = (i == 0)?1:0; g < image[0].length; g++)
-            {
-                meneger.addColor(image[i][g],index);
-                index++;
-            }
-        }
-        meneger.endLoop(index);
-        meneger.sortList();
+        return compress(Orginizer.getPixelsReport(image),image);
+    }
+    public static boolean[] compress(Orginizer.PixelsReport menger, int[][][] image)
+    {
         /*
         0-15 image width
         16-20 loop size
@@ -155,7 +40,9 @@ public class Compressor2 {
         int loopPixels = 0;//how many loops there are
         int totalPixels = 0;// how many pixels there are (loop count as 1)
 
-        final List<Pixel> list = meneger.list;
+        final List<Pixel> list = menger.getList();
+        final int LOOP_LENGTH = (int)(Math.log((menger.getBiggestLoop())) / Math.log(2)) + 1;
+        final int index = menger.getIndex();
         final int LIST_SIZE = list.size();
         for(int i = 0; i < LIST_SIZE; i++)
         {
@@ -170,7 +57,7 @@ public class Compressor2 {
                 int profit = 0;
                 for(int g = i; g < Math.pow(2,linkSize + 1) && g < LIST_SIZE; g++)
                 {
-                    profit += (meneger.list.get(g).count * (EMPTY_COLOR_SIZE - linkSize - 1)) - 25;
+                    profit += (list.get(g).count * (EMPTY_COLOR_SIZE - linkSize - 1)) - 25;
                 }
                 if(profit > linkPixels)
                 {
@@ -181,8 +68,7 @@ public class Compressor2 {
                     break;
             }
         }
-        System.out.println("best link size is " + linkSize);
-        final int LOOP_LENGTH = (int)(Math.log((meneger.biggestLoop)) / Math.log(2)) + 1;
+        //System.out.println("best link size is " + linkSize);
         for(int i = 0; i < LIST_SIZE; i++)
         {
             Pixel pixel = list.get(i);
@@ -207,7 +93,7 @@ public class Compressor2 {
         }
         for(int i = 0; i < index; i++)
         {
-            final Pixel pixel = meneger.getEqualTo(image[i / image[0].length][i % image[0].length]);
+            final Pixel pixel = getEqualTo(image[i / image[0].length][i % image[0].length],list);
             final boolean[] id = pixel.colorIdentify;
             final int loopLength = pixel.haveLoopIn(i);
             code[writer] = id.length != 24;
@@ -400,5 +286,15 @@ public class Compressor2 {
             s.append(b[i]?'1':'0');
         }
         return s.toString();
+    }
+    private static Pixel getEqualTo(int[] color, List<Pixel> list)
+    {
+        for(Pixel pixel: list)
+        {
+            if(pixel.equal(color))
+                return pixel;
+        }
+        System.out.println("error didn't found match");
+        return null;
     }
 }
